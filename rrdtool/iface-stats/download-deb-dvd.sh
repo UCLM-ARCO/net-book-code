@@ -1,0 +1,1 @@
+wget ftp://ftp.rediris.es/mirror/debian-cd/6.0.4/i386/iso-dvd/debian-6.0.4-i386-DVD-1.iso

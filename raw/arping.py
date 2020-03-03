@@ -158,8 +158,7 @@ def main(src_ip, dst_ip, iface='eth0'):
     arp_request = ARP(src=src_ip, dst=dst_ip)
     print(arp_request)
 
-    frame = Ether(src = sock.getsockname()[-1],
-                  dst = BROADCAST,
+    frame = Ether(src = sock.getsockname()[-1], dst = BROADCAST,
                   payload = arp_request)
     sock.send(frame.to_stream())
 

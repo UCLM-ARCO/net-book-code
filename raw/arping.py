@@ -1,9 +1,9 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python3
 "usage: %s <local_ip> <remote_ip>"
 
 # arping.py
 #
-# Copyright (C) 2007 David Villa Alises
+# Copyright (C) 2007,2020 David Villa Alises
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import sys
-import string
 import struct
 import socket
 
@@ -28,7 +27,7 @@ ETH_P_ALL = 3
 ETH_P_ARP = 0x0806
 ARP_REQUEST = 1
 ARP_REPLY = 2
-BROADCAST = "\xFF" * 6
+BROADCAST = 6 * b'\xFF'
 
 
 class DissectionError(Exception):
@@ -53,23 +52,27 @@ class IP_address(object):
 
 
 class MAC_address(object):
+    null_address = 6 * b'\0'
+
     def __init__(self, address=None):
-        self.address = address
+        assert(isinstance(address, (type(None), bytes))),\
+            "Address should be bytes type: {}".format(address)
+        self.address = address or self.null_address
 
     def binary(self):
-        return self.address or '\0'
+        return self.address
 
     def ascii(self):
-        return string.join(["%02X" % ord(b) for b in self.address], ":")
+        return str.join(':', ('%02X' % b for b in self.address))
 
     def __repr__(self):
         return self.ascii()
 
-    def __nonzero__(self):
-        return bool(self.address)
+    def __bool__(self):
+        return self.address != self.null_address
 
-    def __cmp__(self, other):
-        return cmp(self.address, other.address)
+    def __eq__(self, other):
+        return self.address == other.address
 
 
 class Ether(object):
@@ -86,15 +89,15 @@ class Ether(object):
             payload.frame = self
 
     def to_stream(self):
-        header = struct.pack("!6s6sh",
+        header = struct.pack('!6s6sh',
                              self.dst.binary(), self.src.binary(), self.payload.proto)
         retval = header + self.payload.to_stream()
-        return retval + (60 - len(retval)) * "\x00"
+        return retval + (60 - len(retval)) * b'\x00'
 
     @classmethod
     def from_stream(cls, frame):
         try:
-            fields = struct.unpack("!6s6sh", frame[:14])
+            fields = struct.unpack('!6s6sh', frame[:14])
             retval = Ether(*fields)
         except struct.error:
             raise DissectionError
@@ -118,7 +121,7 @@ class ARP(object):
 
     def to_stream(self):
         hw_src = self.hw_src if self.hw_src else self.frame.src
-        return struct.pack("!HHbbH6s4s6s4s",
+        return struct.pack('!HHbbH6s4s6s4s',
                            0x1, 0x0800,
                            6, 4, self.operation,
                            hw_src.binary(),      self.src.binary(),
@@ -126,13 +129,13 @@ class ARP(object):
 
     @classmethod
     def from_stream(cls, frame):
-        operation = struct.unpack("!H", frame[6:8])[0]
+        operation = struct.unpack('!H', frame[6:8])[0]
 
         if operation not in [ARP_REQUEST, ARP_REPLY]:
             raise DissectionError
 
         try:
-            hw_src, src, hw_dst, dst = struct.unpack("!6s4s6s4s", frame[8:28])
+            hw_src, src, hw_dst, dst = struct.unpack('!6s4s6s4s', frame[8:28])
             return ARP(src=src, dst=dst, hw_src=hw_src, hw_dst=hw_dst,
                        operation=operation)
         except struct.error:
@@ -148,12 +151,12 @@ class ARP(object):
         return "Wrong ARP message"
 
 
-def main(src_ip, dst_ip):
+def main(src_ip, dst_ip, iface='eth0'):
     sock = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ARP))
-    sock.bind(("eth0", ETH_P_ARP))
+    sock.bind((iface, ETH_P_ARP))
 
     arp_request = ARP(src=src_ip, dst=dst_ip)
-    print arp_request
+    print(arp_request)
 
     frame = Ether(src = sock.getsockname()[-1],
                   dst = BROADCAST,
@@ -162,11 +165,11 @@ def main(src_ip, dst_ip):
 
     while 1:
         try:
-            eth = Ether.from_stream(sock.recv(2048))
+            eth = Ether.from_stream(sock.recv(1600))
             arp_reply = eth.payload
 
             if arp_reply.hw_dst == frame.src:
-                print arp_reply
+                print(arp_reply)
                 break
 
         except DissectionError:
@@ -174,7 +177,7 @@ def main(src_ip, dst_ip):
 
 
 if len(sys.argv) != 3:
-    print __doc__ % sys.argv[0]
+    print(__doc__ % sys.argv[0])
     sys.exit()
 
 main(sys.argv[1], sys.argv[2])

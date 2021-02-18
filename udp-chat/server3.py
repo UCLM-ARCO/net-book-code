@@ -19,3 +19,5 @@ while 1:
 
     if message_out == QUIT:
         break
+
+sock.close()

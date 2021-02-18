@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- mode:python; coding:utf-8; tab-width:4 -*-
 
 import socket
 import _thread
@@ -12,8 +11,10 @@ class Chat:
         self.sock = sock
         self.peer = peer
 
+    def run(self):
         _thread.start_new_thread(self.sending, ())
         self.receiving()
+        self.sock.close()
 
     def sending(self):
         while 1:
@@ -36,4 +37,4 @@ if __name__ == '__main__':
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(server)
     message, client = sock.recvfrom(0, socket.MSG_PEEK)
-    Chat(sock, client)
+    Chat(sock, client).run()

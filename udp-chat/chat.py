@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- mode:python; coding:utf-8; tab-width:4 -*-
 "usage: %s [--server|--client]"
 
 import sys
@@ -14,8 +13,10 @@ class Chat:
         self.sock = sock
         self.peer = peer
 
+    def run(self):
         _thread.start_new_thread(self.sending, ())
         self.receiving()
+        self.sock.close()
 
     def sending(self):
         while 1:
@@ -28,21 +29,16 @@ class Chat:
     def receiving(self):
         while 1:
             message, peer = self.sock.recvfrom(1024)
-            print(message.decode())
+            print("other> {}".format(message.decode()))
 
             if message == QUIT:
                 self.sock.sendto(QUIT, self.peer)
                 break
 
 
-def error():
+if __name__ == '__main__':
     print(__doc__ % sys.argv[0])
     sys.exit()
-
-
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        error()
 
     mode = sys.argv[1]
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -50,10 +46,5 @@ if __name__ == '__main__':
     if mode == '--server':
         sock.bind(server)
         message, client = sock.recvfrom(0, socket.MSG_PEEK)
-        Chat(sock, client)
 
-    elif mode == '--client':
-        Chat(sock, server)
-
-    else:
-        error()
+    Chat(sock, client).run()

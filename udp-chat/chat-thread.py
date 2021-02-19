@@ -4,7 +4,7 @@
 import sys
 import socket
 import _thread
-server = ('', 12345)
+SERVER = ('', 12345)
 QUIT = b'bye'
 
 
@@ -37,14 +37,17 @@ class Chat:
 
 
 if __name__ == '__main__':
-    print(__doc__ % sys.argv[0])
-    sys.exit()
+    if len(sys.argv) != 2:
+        print(__doc__ % sys.argv[0])
+        sys.exit()
 
     mode = sys.argv[1]
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     if mode == '--server':
-        sock.bind(server)
+        sock.bind(SERVER)
         message, client = sock.recvfrom(0, socket.MSG_PEEK)
+        Chat(sock, client).run()
 
-    Chat(sock, client).run()
+    else:
+        Chat(sock, SERVER).run()

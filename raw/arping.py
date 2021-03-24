@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-"usage: %s <local_ip> <remote_ip>"
+"usage: %s <local_ip> <remote_ip> <iface>"
 
 # arping.py
 #
-# Copyright (C) 2007,2020 David Villa Alises
+# Copyright (C) 2007,2021 David Villa Alises
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -88,14 +88,14 @@ class Ether(object):
             self.proto = payload.proto
             payload.frame = self
 
-    def to_stream(self):
+    def serialize(self):
         header = struct.pack('!6s6sh',
                              self.dst.binary(), self.src.binary(), self.payload.proto)
-        retval = header + self.payload.to_stream()
+        retval = header + self.payload.serialize()
         return retval + (60 - len(retval)) * b'\x00'
 
     @classmethod
-    def from_stream(cls, frame):
+    def dissect(cls, frame):
         try:
             fields = struct.unpack('!6s6sh', frame[:14])
             retval = Ether(*fields)
@@ -103,7 +103,7 @@ class Ether(object):
             raise DissectionError
 
         if retval.proto == ETH_P_ARP:
-            retval.set_payload(ARP.from_stream(frame[14:]))
+            retval.set_payload(ARP.dissect(frame[14:]))
 
         return retval
 
@@ -119,7 +119,7 @@ class ARP(object):
         self.operation = operation
         self.frame = None
 
-    def to_stream(self):
+    def serialize(self):
         hw_src = self.hw_src if self.hw_src else self.frame.src
         return struct.pack('!HHbbH6s4s6s4s',
                            0x1, 0x0800,
@@ -128,7 +128,7 @@ class ARP(object):
                            self.hw_dst.binary(), self.dst.binary())
 
     @classmethod
-    def from_stream(cls, frame):
+    def dissect(cls, frame):
         operation = struct.unpack('!H', frame[6:8])[0]
 
         if operation not in [ARP_REQUEST, ARP_REPLY]:
@@ -146,7 +146,7 @@ class ARP(object):
             return "ARP Request: Who has {0}? Tell {1}".format(self.dst, self.src)
 
         if self.operation == ARP_REPLY:
-            return "ARP Reply:   {0} is at {1}".format(self.dst, self.hw_src)
+            return "ARP Reply:   {0} is at {1}".format(self.src, self.hw_src)
 
         return "Wrong ARP message"
 
@@ -160,11 +160,11 @@ def main(src_ip, dst_ip, iface='eth0'):
 
     frame = Ether(src = sock.getsockname()[-1], dst = BROADCAST,
                   payload = arp_request)
-    sock.send(frame.to_stream())
+    sock.send(frame.serialize())
 
     while 1:
         try:
-            eth = Ether.from_stream(sock.recv(1600))
+            eth = Ether.dissect(sock.recv(1600))
             arp_reply = eth.payload
 
             if arp_reply.hw_dst == frame.src:
@@ -175,8 +175,8 @@ def main(src_ip, dst_ip, iface='eth0'):
             print(".")
 
 
-if len(sys.argv) != 3:
+if len(sys.argv) != 4:
     print(__doc__ % sys.argv[0])
     sys.exit()
 
-main(sys.argv[1], sys.argv[2])
+main(*sys.argv[1:])

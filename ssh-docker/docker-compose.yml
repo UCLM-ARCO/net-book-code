@@ -1,0 +1,7 @@
+version: '3.3'
+
+services:
+  ssh:
+    container_name: viper
+    hostname: viper
+    build: .

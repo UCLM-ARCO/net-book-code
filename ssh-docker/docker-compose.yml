@@ -5,3 +5,12 @@ services:
     container_name: viper
     hostname: viper
     build: .
+    networks:
+      localnet:
+        ipv4_address: 172.18.0.2
+
+networks:
+  localnet:
+    ipam:
+      config:
+        - subnet: 172.18.0.0/24

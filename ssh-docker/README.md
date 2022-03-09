@@ -6,14 +6,6 @@ laptop$ docker-compose up
 [console blocked by the container SSH server]
 ```
 
-Get container IP
-----------------
-
-```
-laptop$ ./docker-ip.sh
-172.18.0.2
-```
-
 Login container
 ---------------
 

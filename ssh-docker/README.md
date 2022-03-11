@@ -24,8 +24,8 @@ Last login: Wed Mar  9 20:27:30 2022 from 172.20.0.1
 user@viper:~$
 ```
 
-Private key access
-------------------
+Authenticate by public key
+---------------------------
 
 ```
 laptop$ ssh-keygen
@@ -52,17 +52,62 @@ The key's randomart image is:
 +----[SHA256]-----+
 ```
 
+Create your `~/.ssh/config` file at 'laptop':
+
 ```
-laptop$ ssh-copy-id user@172.20.0.2
+Host viper
+    hostname 172.20.0.2
+    User user
+```
+
+
+```
+laptop$ ssh-copy-id viper
 user@172.20.0.2's password: secret
 
 Number of key(s) added: 1
 
-Now try logging into the machine, with:   "ssh 'user@172.20.0.2'"
+Now try logging into the machine, with:   "ssh 'viper'"
 and check to make sure that only the key(s) you wanted were added.
 ```
 
 ```
-laptop$ ssh user@172.20.0.2
+laptop$ ssh user@viper
+user@viper:~$
+```
+
+
+Authenticate by certificate
+---------------------------
+
+Remove private key at viper:
+
+```
+laptop$ ssh viper rm .ssh/authorized_keys
+```
+
+
+Get key and certificates from viper:
+
+```
+laptop$ scp user@viper:user_key* ~/.ssh/
+user_key                           100% 1679     6.1MB/s   00:00
+user_key-cert.pub                  100% 1496     5.8MB/s   00:00
+user_key.pub                       100%  399     2.2MB/s   00:00
+```
+
+Tune  your `~/.ssh/config` file at 'laptop':
+
+```
+Host viper
+    hostname 172.20.0.2
+    User user
+    IdentityFile ~/.ssh/user_key
+```
+
+And login in:
+
+```
+laptop$ ssh user@viper
 user@viper:~$
 ```

@@ -7,10 +7,10 @@ services:
     build: .
     networks:
       localnet:
-        ipv4_address: 172.18.0.2
+        ipv4_address: 172.20.0.2
 
 networks:
   localnet:
     ipam:
       config:
-        - subnet: 172.18.0.0/24
+        - subnet: 172.20.0.0/24

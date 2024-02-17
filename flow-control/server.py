@@ -15,8 +15,8 @@ received = 0
 
 while 1:
     elapsed = time.time() - start
-    print(f'received:{received/10**3:,.0f} kB - rate:{received/10**3/elapsed:,.0f} kB/s',
-        end='', flush=True)
+    print(f'received:{received/10**3:,} kB, rate:{received/10**3//elapsed:,} kB/s', end='')
+    # input('>')
 
     time.sleep(0.1)
     data = child.recv(5*10**4)
@@ -24,6 +24,6 @@ while 1:
         break
 
     received += len(data)
-    print('\r' + ' ' * 40 + '\r', end='', flush=True)
+    print('\r' + ' ' * 40 + '\r', end='')
 
 s.close()

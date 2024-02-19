@@ -4,26 +4,41 @@ import sys
 import socket
 import time
 
-s = socket.socket()
-s.bind(('', int(sys.argv[1])))
-s.listen(10)
 
-child, client = s.accept()
+class Receiver:
+    def __init__(self, port):
+        self.sock = socket.socket()
+        self.sock.bind(('', port))
+        self.sock.listen(1)
+        self.child, client = self.sock.accept()
+        self.init = time.time()
+        self.received = 0
 
-start = time.time()
-received = 0
+    def run(self):
+        try:
+            self.receiving()
+        except KeyboardInterrupt:
+            self.sock.close()
 
-while 1:
-    elapsed = time.time() - start
-    print(f'received:{received/10**3:,} kB, rate:{received/10**3//elapsed:,} kB/s', end='')
-    # input('>')
+    def receiving(self):
+        while 1:
+            # input('>')
 
-    time.sleep(0.1)
-    data = child.recv(5*10**4)
-    if not data:
-        break
+            time.sleep(0.1)
+            data = self.child.recv(5*10**4)
+            if not data:
+                break
 
-    received += len(data)
-    print('\r' + ' ' * 40 + '\r', end='')
+            self.log()
+            self.received += len(data)
 
-s.close()
+
+    def log(self):
+        elapsed = time.time() - self.init
+        msg = f'received:{self.received/10**3:,} kB, rate:{self.received/10**3//elapsed:,} kB/s'
+        sys.stderr.write(f'\r{" "*40}\r' + msg)
+        sys.stderr.flush()
+
+
+port = int(sys.argv[1])
+Receiver(port).run()

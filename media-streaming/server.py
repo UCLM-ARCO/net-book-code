@@ -9,7 +9,7 @@ class Receiver:
     def __init__(self, port):
         self.sock = socket.socket()
         self.sock.setsockopt(
-            socket.SOL_SOCKET, socket.SO_RCVBUF, 2048)
+            socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
 
         self.sock.bind(('', port))
         self.sock.listen(1)
@@ -37,7 +37,8 @@ class Receiver:
 
     def log(self):
         elapsed = time.time() - self.init
-        msg = f'received:{self.received//1000:,} kB, rate:{(self.received*8)/1000//elapsed:,} kbps'
+        msg = f'received:{self.received//1000:,} kB, '
+        msg += f'rate:{(self.received*8)/1000//elapsed:,.0f} kbps'
         sys.stderr.write(f'\r{" "*40}\r' + msg)
         sys.stderr.flush()
 

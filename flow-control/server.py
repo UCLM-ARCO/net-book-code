@@ -35,7 +35,8 @@ class Receiver:
 
     def log(self):
         elapsed = time.time() - self.init
-        msg = f'received:{self.received/10**3:,} kB, rate:{self.received/10**3//elapsed:,} kB/s'
+        msg = f'received:{self.received/1000:,} kB, '
+        msg += f'rate:{self.received/1000//elapsed:,.0f} kB/s'
         sys.stderr.write(f'\r{" "*40}\r' + msg)
         sys.stderr.flush()
 

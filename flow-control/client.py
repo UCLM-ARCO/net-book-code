@@ -27,7 +27,8 @@ class Sender:
 
     def log (self):
         elapsed = time.time() - self.init
-        msg = f'sent:{self.sent//10**3:,} kB, rate:{self.sent/10**3//elapsed:,} kB/s'
+        msg = f'sent:{self.sent//1000:,} kB, '
+        msg += f'rate:{self.sent/1000//elapsed:,.0f} kB/s'
 
         sys.stderr.write(f'\r{"-"*40}\r'); sys.stderr.flush()
         time.sleep(0.01)

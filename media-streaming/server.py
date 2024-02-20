@@ -12,9 +12,7 @@ def log(msg):
 class Receiver:
     def __init__(self, port):
         self.sock = socket.socket()
-        # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
-        log(f'receiving window size: \
-            {self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)}\n')
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
 
         self.sock.bind(('', port))
         self.sock.listen(1)

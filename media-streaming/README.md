@@ -4,7 +4,7 @@ Flow control for media stream play
 run server:
 
 ```
-$ ./server.py 2000 | mplayer -quite -
+$ ./server.py 2000 | mplayer -quiet -
 ```
 
 run client:

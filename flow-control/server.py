@@ -5,6 +5,10 @@ import socket
 import time
 
 
+def log(msg):
+    sys.stderr.write(msg)
+    sys.stderr.flush()
+
 class Receiver:
     def __init__(self, port):
         self.sock = socket.socket()
@@ -13,6 +17,8 @@ class Receiver:
         self.child, client = self.sock.accept()
         self.init = time.time()
         self.received = 0
+        rcv_buffer = self.child.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
+        log(f'receiving window size: {rcv_buffer:,} B\n')
 
     def run(self):
         try:
@@ -29,16 +35,15 @@ class Receiver:
             if not data:
                 break
 
-            self.log()
+            self.stats()
             self.received += len(data)
 
 
-    def log(self):
+    def stats(self):
         elapsed = time.time() - self.init
         msg = f'received:{self.received/1000:,} kB, '
         msg += f'rate:{self.received/1000//elapsed:,.0f} kB/s'
-        sys.stderr.write(f'\r{" "*40}\r' + msg)
-        sys.stderr.flush()
+        log(f'\r{" "*40}\r' + msg)
 
 
 port = int(sys.argv[1])

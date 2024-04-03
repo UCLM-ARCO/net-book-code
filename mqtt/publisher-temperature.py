@@ -23,7 +23,7 @@ publisher.connect('127.0.0.1')
 
 while 1:
     publisher.publish(
-        'temperature/{}'.format(IDENTIFIER),
+        f'temperature/{IDENTIFIER}',
         json.dumps(take_reading())
     )
 

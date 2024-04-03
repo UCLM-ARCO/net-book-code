@@ -1,0 +1,23 @@
+Depends
+-------
+
+- python3-paho-mqtt (deb)
+- mosquitto (deb)
+
+
+Assure broker is running
+------------------------
+
+$ sudo service mosquitto restart
+
+
+Run subscriber
+--------------
+
+$ ./subscriber.py
+
+
+Run publisher
+-------------
+
+$ ./publisher-temperature.py

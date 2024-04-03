@@ -11,6 +11,7 @@ def log(msg):
     sys.stderr.write(msg)
     sys.stderr.flush()
 
+
 class Sender:
     def __init__(self, host, port):
         self.sock = socket.socket()

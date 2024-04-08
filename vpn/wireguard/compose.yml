@@ -1,0 +1,42 @@
+services:
+  server:
+    image: linuxserver/wireguard
+    container_name: vpn-server
+    hostname: vpn-server
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - SERVERURL=vpn-server
+      - SERVERPORT=51820
+      - PEERS=2
+      - PEERDNS=auto
+      - INTERNAL_SUBNET=10.13.13.0
+    volumes:
+      - ./server:/config
+      - /lib/modules:/lib/modules
+    ports:
+      - "51820:51820/udp"
+    restart: unless-stopped
+
+  client:
+    image: linuxserver/wireguard
+    container_name: vpn-client
+    hostname: vpn-client
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - SERVERURL=vpn-server
+      - SERVERPORT=51820
+      - PEERDNS=auto
+    volumes:
+      - ./client:/config/wg_confs
+      - /lib/modules:/lib/modules
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped

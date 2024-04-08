@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  server:
+    image: kylemanna/openvpn
+    container_name: openvpn-server
+    hostname: vpn-server
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    volumes:
+      - ./docker/server/data/conf:/etc/openvpn
+    ports:
+      - "1194:1194/udp"
+
+  client:
+    build: docker/client
+    hostname: vpn-client
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    volumes:
+      - ./docker/client/data:/config
+    restart: unless-stopped
+    command: openvpn --config /config/client1.ovpn

@@ -15,6 +15,7 @@ services:
 
   client:
     build: docker/client
+    container_name: openvpn-client
     hostname: vpn-client
     cap_add:
       - NET_ADMIN

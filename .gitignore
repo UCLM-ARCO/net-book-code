@@ -1,1 +1,4 @@
-**/.vscode
+vpn/wireguard/client/peer1.conf
+vpn/wireguard/server/
+vpn/openvpn/docker/client/data/*
+vpn/openvpn/docker/server/data/*
